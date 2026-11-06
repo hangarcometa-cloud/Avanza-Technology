@@ -70,3 +70,22 @@
     v.addEventListener('play', sync); v.addEventListener('pause', sync); sync();
   }
 })();
+
+/* Test call audio player */
+(function () {
+  var a = document.getElementById('aud'), btn = document.getElementById('aud-btn'), box = document.getElementById('player');
+  if (!a || !btn) return;
+  var wave = document.getElementById('aud-wave'), prog = document.getElementById('aud-prog'), time = document.getElementById('aud-time');
+  var fmt = function (s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); };
+  var total = function () { return isFinite(a.duration) && a.duration > 0 ? a.duration : 126; };
+  var draw = function () { var p = a.currentTime / total(); prog.style.clipPath = 'inset(0 ' + (100 - p * 100) + '% 0 0)'; time.textContent = fmt(a.currentTime) + ' / ' + fmt(total()); };
+  btn.addEventListener('click', function () { if (a.paused) a.play(); else a.pause(); });
+  a.addEventListener('play', function () { box.classList.add('playing'); btn.setAttribute('aria-label', box.dataset.pause); });
+  a.addEventListener('pause', function () { box.classList.remove('playing'); btn.setAttribute('aria-label', box.dataset.play); });
+  a.addEventListener('timeupdate', draw); a.addEventListener('loadedmetadata', draw);
+  wave.addEventListener('click', function (e) {
+    var r = wave.getBoundingClientRect(), p = (e.clientX - r.left) / r.width;
+    var seek = function () { a.currentTime = p * total(); draw(); };
+    if (a.readyState < 1) { a.addEventListener('loadedmetadata', seek, { once: true }); a.load(); } else seek();
+  });
+})();
